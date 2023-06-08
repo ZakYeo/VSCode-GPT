@@ -1,5 +1,7 @@
 const vscode = require('vscode');
 const { Configuration, OpenAIApi } = require("openai");
+const path = require('path');
+
 
 const configuration = new Configuration({
     apiKey: vscode.workspace.getConfiguration('gptvscode').get('openaiApiKey')
@@ -26,10 +28,86 @@ function activate(context) {
         await generateCode();
     
     });
+
+    let myDataProvider = new MyDataProvider();
+    vscode.window.registerTreeDataProvider('myListView', myDataProvider);
+
+    let disposableChat = vscode.commands.registerCommand('gpt-vscode.openai.chatWithAI', async function () {
+        const prompt = await vscode.window.showInputBox({ prompt: 'Enter your message' });
+        if (prompt) {
+            const aiResponse = await getAIResponse(prompt);
+            myDataProvider.addMessage('User', prompt);
+            myDataProvider.addMessage('AI', aiResponse);
+            myDataProvider.refresh();
+        }
+    });
+
+    context.subscriptions.push(disposableChat);
     
     context.subscriptions.push(disposableGenerateCode);
 
     context.subscriptions.push(disposable);
+
+}
+class MyTreeItem extends vscode.TreeItem {
+    constructor(label, iconPath) {
+        super(label);
+        this.iconPath = iconPath;
+    }
+}
+
+class MyDataProvider {
+    constructor() {
+        this._onDidChangeTreeData = new vscode.EventEmitter();
+        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+        this.data = [];
+    }
+
+    refresh() {
+        this._onDidChangeTreeData.fire();
+    }
+
+    addMessage(sender, message) {
+        let iconPath;
+        if (sender === 'AI') {
+            iconPath = {
+                light: path.join(__filename, '..', '..', 'resources', 'ai.svg'),
+                dark: path.join(__filename, '..', '..', 'resources', 'ai.svg')
+            };
+        } else {
+            iconPath = {
+                light: path.join(__filename, '..', '..', 'resources', 'user.svg'),
+                dark: path.join(__filename, '..', '..', 'resources', 'user.svg')
+            };
+        }
+
+        this.data.push(new MyTreeItem(`${sender}: ${message}`, iconPath));
+    }
+
+    getTreeItem(element) {
+        return element;
+    }
+
+    getChildren(element) {
+        if (element) {
+            return [];
+        } else {
+            return this.data;
+        }
+    }
+}
+
+async function getAIResponse(prompt) {
+    try {
+        const response = await openai.createChatCompletion({
+            model: 'gpt-3.5-turbo',
+            messages: [{ role: 'user', content: prompt }],
+        });
+        return response.data.choices[0].message.content;
+    } catch (error) {
+        console.error(error);
+        return 'An error occurred while contacting the OpenAI API: ' + error.message;
+    }
 }
 
 async function generateComments() {
