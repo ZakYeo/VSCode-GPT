@@ -72,9 +72,43 @@ async function generateComments() {
                     messages: [{ role: 'user', content: `Add suitable comments and docstrings to the following code. Follow conventions and standards. The language is ${language}. Only include the code in your response: ` + highlightedText }],
                 });
 
+                let content = response.data.choices[0].message.content;
+                /*
+                *  Sometimes chatGPT's content can be wrapped in code tags in the following format:
+                *
+                *                                  language```content```
+                *  
+                * The following regex is designed to remove anything but the content.
+                *    
+                * `^(\w+\n)?```([\s\S]*?)```$`: The entire regular expression.
+                * 
+                * `^`: This matches the start of the string. It ensures that the pattern must start at the beginning of the string.
+                * 
+                * `(\w+\n)?`: This part matches a language identifier at the start of the string, followed by a newline. 
+                * The `\w+` part matches one or more word characters (equivalent to [a-zA-Z0-9_]), 
+                * and the `\n` matches a newline. The whole group is made optional by the `?` at the end.
+                * 
+                * ```([\s\S]*?)```$: This part starts and ends with triple backticks, matching a block of content 
+                * that is surrounded by these backticks. Inside the backticks, `[\s\S]*?` matches any amount of 
+                * any character, including newline characters, in a non-greedy way. The `$` at the end ensures that 
+                * the pattern must go all the way to the end of the string.
+                * 
+                * Together, this regular expression matches strings where a block of content is surrounded by triple 
+                * backticks, optionally preceded by a language identifier. It captures only the content inside the 
+                * backticks.
+                */
+                let regex = /^(\w+\n)?```([\s\S]*?)```$/;
+                let match = content.match(regex);
+
+                if (match) {
+                    content = match[2];
+                }
+
+
+
                 // Replace the highlighted text with the response from OpenAI API
                 editor.edit((editBuilder) => {
-                    editBuilder.replace(selection, response.data.choices[0].message.content);
+                    editBuilder.replace(selection, content.trim());
                 });
 
                 // Display a new notification with a completion message
@@ -91,6 +125,7 @@ async function generateComments() {
 }
 
 async function generateCode() {
+    console.log("coding");
     // Check if the command is already running
     if (isRunning) {
         vscode.window.showErrorMessage("Please wait until the current operation finishes.");
