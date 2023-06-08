@@ -18,62 +18,63 @@ function activate(context) {
     console.log('GPT-VSCode Extension Loaded.');
 
     let disposable = vscode.commands.registerCommand('gpt-vscode.openai.generateComments', async function () {
-        // Invoke our function to generate comments
         await generateComments();
-
     });
 
     let disposableGenerateCode = vscode.commands.registerCommand('gpt-vscode.openai.generateCode', async function () {
-        // Invoke our function to generate code
         await generateCode();
-    
     });
 
     let myDataProvider = new MyDataProvider();
     vscode.window.registerTreeDataProvider('myListView', myDataProvider);
 
-    let conversationCounter = 1; // Declare a global counter
+    let conversationCounter = 1;
 
-        // Your command to start a new conversation
-        let disposableNewConversation = vscode.commands.registerCommand('gpt-vscode.openai.addEntry', async function () {
-            myDataProvider.addParent("Chat " + conversationCounter++, vscode.TreeItemCollapsibleState.Expanded);
-        });
+    let disposableNewConversation = vscode.commands.registerCommand('gpt-vscode.openai.addEntry', async function () {
+        let newChatLabel = "Chat " + conversationCounter++;
+        myDataProvider.addParent(newChatLabel, vscode.TreeItemCollapsibleState.Expanded);
+        myDataProvider.currentConversation = newChatLabel;
+    });
 
-        // Chat with AI command
-        let disposableChat = vscode.commands.registerCommand('gpt-vscode.openai.chatWithAI', async function () {
-            // Create a list of chat parent labels
-            let chatOptions = [];
-            for (let i = 1; i < conversationCounter; i++) {
-                chatOptions.push("Chat " + i);
-            }
-            
-            // Ask the user to choose a chat to interact with
-            const selectedChat = await vscode.window.showQuickPick(chatOptions, { placeHolder: 'Select a chat to interact with' });
+    let disposableSelectConversation = vscode.commands.registerCommand('gpt-vscode.openai.selectConversation', function (label) {
+        myDataProvider.currentConversation = label;
+    });
 
-            // Only proceed if a chat was selected
-            if (selectedChat) {
-                const prompt = await vscode.window.showInputBox({ prompt: 'Enter your message' });
-                if (prompt) {
-                    const aiResponse = await interactWithOpenAI(prompt);
+    let disposableChat = vscode.commands.registerCommand('gpt-vscode.openai.chatWithAI', async function () {
+    let selectedChat = myDataProvider.currentConversation;
 
-                    myDataProvider.addChild(selectedChat, prompt, vscode.TreeItemCollapsibleState.None, "User");
-                    myDataProvider.addChild(selectedChat, aiResponse, vscode.TreeItemCollapsibleState.None, "AI");
-                    myDataProvider.refresh();
-                }
-            }
-        });
+    if (!selectedChat) {
+        const chatOptions = myDataProvider.data.map(node => node.label);
+        selectedChat = await vscode.window.showQuickPick(chatOptions, { placeHolder: 'Select a chat to interact with' });
+    }
 
+    if (selectedChat) {
+        const prompt = await vscode.window.showInputBox({ prompt: 'Enter your message' });
+        if (prompt) {
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Contacting OpenAI...",
+                cancellable: false
+            }, async () => {
+                const aiResponse = await interactWithOpenAI(prompt);
 
+                myDataProvider.addChild(selectedChat, prompt, vscode.TreeItemCollapsibleState.None, "User");
+                myDataProvider.addChild(selectedChat, aiResponse, vscode.TreeItemCollapsibleState.None, "AI");
+                myDataProvider.refresh();
+
+                vscode.window.showInformationMessage(`Message added to ${selectedChat}`);
+            });
+        }
+    }
+    });
 
     context.subscriptions.push(disposableNewConversation);
-
+    context.subscriptions.push(disposableSelectConversation);
     context.subscriptions.push(disposableChat);
-    
-    context.subscriptions.push(disposableGenerateCode);
-
     context.subscriptions.push(disposable);
-
+    context.subscriptions.push(disposableGenerateCode);
 }
+
 class MyTreeItem extends vscode.TreeItem {
     constructor(label, iconPath, collapsibleState) {
         super(label, collapsibleState);
@@ -87,6 +88,7 @@ class MyDataProvider {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this.data = [];
+        this.currentConversation = null;
     }
 
     refresh() {
@@ -113,6 +115,11 @@ class MyDataProvider {
     }
 
     getTreeItem(element) {
+        element.command = {
+            command: 'gpt-vscode.openai.selectConversation',
+            title: "Select Conversation",
+            arguments: [element.label]
+        };
         return element;
     }
 
