@@ -28,12 +28,22 @@ function activate(context) {
     let myDataProvider = new MyDataProvider();
     vscode.window.registerTreeDataProvider('myListView', myDataProvider);
 
-    let conversationCounter = 1;
+    let conversationCounter = context.globalState.get('conversationCounter', 1); // Use a default value of 1
+    // load saved conversations from storage
+    let savedConversations = context.globalState.get('conversations', []); // Use a default value of an empty array
+    for (let conversation of savedConversations) {
+        myDataProvider.addParent(conversation.label, vscode.TreeItemCollapsibleState.Expanded);
+        for (let message of conversation.messages) {
+            myDataProvider.addChild(conversation.label, message.text, vscode.TreeItemCollapsibleState.None, message.sender);
+        }
+    }
+
 
     let disposableNewConversation = vscode.commands.registerCommand('gpt-vscode.openai.addEntry', async function () {
         let newChatLabel = "Chat " + conversationCounter++;
         myDataProvider.addParent(newChatLabel, vscode.TreeItemCollapsibleState.Expanded);
         myDataProvider.currentConversation = newChatLabel;
+        context.globalState.update('conversationCounter', conversationCounter);
     });
 
     let disposableSelectConversation = vscode.commands.registerCommand('gpt-vscode.openai.selectConversation', function (label) {
@@ -61,6 +71,18 @@ function activate(context) {
                 myDataProvider.addChild(selectedChat, prompt, vscode.TreeItemCollapsibleState.None, "User");
                 myDataProvider.addChild(selectedChat, aiResponse, vscode.TreeItemCollapsibleState.None, "AI");
                 myDataProvider.refresh();
+
+                // Save the conversation to local storage
+                let conversationIndex = savedConversations.findIndex((conversation) => conversation.label === selectedChat);
+                if (conversationIndex === -1) {
+                    // The conversation doesn't exist yet, so create it
+                    savedConversations.push({ label: selectedChat, messages: [{ sender: 'User', text: prompt }, { sender: 'AI', text: aiResponse }] });
+                } else {
+                    // The conversation already exists, so update it
+                    savedConversations[conversationIndex].messages.push({ sender: 'User', text: prompt });
+                    savedConversations[conversationIndex].messages.push({ sender: 'AI', text: aiResponse });
+                }
+                await context.globalState.update('conversations', savedConversations);
 
                 vscode.window.showInformationMessage(`Message added to ${selectedChat}`);
             });
