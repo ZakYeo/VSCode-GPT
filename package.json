@@ -16,24 +16,39 @@
   "contributes": {
     "commands": [
       {
-        "command": "gpt-vscode.openai",
+        "command": "gpt-vscode.openai.generateComments",
         "title": "Generate Comments"
+      },
+      {
+        "command": "gpt-vscode.openai.generateCode",
+        "title": "Generate Code"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "gpt-vscode.openai",
-          "group": "navigation",
+          "command": "gpt-vscode.openai.generateComments",
+          "group": "gptvscode@1",
           "title": "Generate Comments Using Chat-GPT"
+        },
+        {
+          "command": "gpt-vscode.openai.generateCode",
+          "group": "gptvscode@1",
+          "title": "Generate Code Using Chat-GPT"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "gpt-vscode.openai",
+        "command": "gpt-vscode.openai.generateComments",
         "key": "ctrl+shift+a",
         "mac": "cmd+shift+a",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "gpt-vscode.openai.generateCode",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q",
         "when": "editorTextFocus"
       }
     ],
