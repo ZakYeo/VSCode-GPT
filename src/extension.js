@@ -32,15 +32,40 @@ function activate(context) {
     let myDataProvider = new MyDataProvider();
     vscode.window.registerTreeDataProvider('myListView', myDataProvider);
 
-    let disposableChat = vscode.commands.registerCommand('gpt-vscode.openai.chatWithAI', async function () {
-        const prompt = await vscode.window.showInputBox({ prompt: 'Enter your message' });
-        if (prompt) {
-            const aiResponse = await getAIResponse(prompt);
-            myDataProvider.addMessage('User', prompt);
-            myDataProvider.addMessage('AI', aiResponse);
-            myDataProvider.refresh();
-        }
-    });
+    let conversationCounter = 1; // Declare a global counter
+
+        // Your command to start a new conversation
+        let disposableNewConversation = vscode.commands.registerCommand('gpt-vscode.openai.addEntry', async function () {
+            myDataProvider.addParent("Chat " + conversationCounter++, vscode.TreeItemCollapsibleState.Expanded);
+        });
+
+        // Chat with AI command
+        let disposableChat = vscode.commands.registerCommand('gpt-vscode.openai.chatWithAI', async function () {
+            // Create a list of chat parent labels
+            let chatOptions = [];
+            for (let i = 1; i < conversationCounter; i++) {
+                chatOptions.push("Chat " + i);
+            }
+            
+            // Ask the user to choose a chat to interact with
+            const selectedChat = await vscode.window.showQuickPick(chatOptions, { placeHolder: 'Select a chat to interact with' });
+
+            // Only proceed if a chat was selected
+            if (selectedChat) {
+                const prompt = await vscode.window.showInputBox({ prompt: 'Enter your message' });
+                if (prompt) {
+                    const aiResponse = await interactWithOpenAI(prompt);
+
+                    myDataProvider.addChild(selectedChat, prompt, vscode.TreeItemCollapsibleState.None, "User");
+                    myDataProvider.addChild(selectedChat, aiResponse, vscode.TreeItemCollapsibleState.None, "AI");
+                    myDataProvider.refresh();
+                }
+            }
+        });
+
+
+
+    context.subscriptions.push(disposableNewConversation);
 
     context.subscriptions.push(disposableChat);
     
@@ -50,9 +75,10 @@ function activate(context) {
 
 }
 class MyTreeItem extends vscode.TreeItem {
-    constructor(label, iconPath) {
-        super(label);
+    constructor(label, iconPath, collapsibleState) {
+        super(label, collapsibleState);
         this.iconPath = iconPath;
+        this.children = [];
     }
 }
 
@@ -66,6 +92,7 @@ class MyDataProvider {
     refresh() {
         this._onDidChangeTreeData.fire();
     }
+    
 
     addMessage(sender, message) {
         let iconPath;
@@ -82,6 +109,7 @@ class MyDataProvider {
         }
 
         this.data.push(new MyTreeItem(`${sender}: ${message}`, iconPath));
+        this.refresh();
     }
 
     getTreeItem(element) {
@@ -90,14 +118,40 @@ class MyDataProvider {
 
     getChildren(element) {
         if (element) {
-            return [];
+            return element.children;
         } else {
             return this.data;
         }
     }
+
+    getIconPath(sender) {
+        return {
+            light: path.join(__filename, '..', '..', 'resources', `${sender.toLowerCase()}.svg`),
+            dark: path.join(__filename, '..', '..', 'resources', `${sender.toLowerCase()}.svg`)
+        };
+    }
+
+    addParent(label, collapsibleState) {
+        const parent = new MyTreeItem(label, path.join(__filename, '..', '..', 'resources', 'icon.svg'), collapsibleState);
+        this.data.push(parent);
+        this.refresh();
+    }
+
+    addChild(parentLabel, label, collapsibleState, sender) {
+        const parent = this.data.find((node) => node.label === parentLabel);
+        if (parent) {
+
+            const child = new MyTreeItem(`${sender}: ${label}`, this.getIconPath(sender), collapsibleState)
+            parent.children.push(child);
+            this.refresh();
+        }
+    }
 }
 
-async function getAIResponse(prompt) {
+
+
+
+async function interactWithOpenAI(prompt) {
     try {
         const response = await openai.createChatCompletion({
             model: 'gpt-3.5-turbo',
@@ -145,12 +199,10 @@ async function generateComments() {
             cancellable: false
         }, async (progress) => {
             try {
-                let response = await openai.createChatCompletion({
-                    model: 'gpt-3.5-turbo',
-                    messages: [{ role: 'user', content: `Add suitable comments and docstrings to the following code. Follow conventions and standards. The language is ${language}. Only include the code in your response: ` + highlightedText }],
-                });
+                let prompt = `Add suitable comments and docstrings to the following code. Follow conventions and standards. The language is ${language}. Only include the code in your response: ` + highlightedText;
+                let content = await interactWithOpenAI(prompt);
 
-                let content = response.data.choices[0].message.content;
+                content = content.data.choices[0].message.content;
                 /*
                 *  Sometimes chatGPT's content can be wrapped in code tags in the following format:
                 *
@@ -238,14 +290,12 @@ async function generateCode() {
             cancellable: false
         }, async (progress) => {
             try {
-                let response = await openai.createChatCompletion({
-                    model: 'gpt-3.5-turbo',
-                    messages: [{ role: 'user', content: `Generate code based on the following description. Follow conventions and standards. The language is ${language}. Description: ${codeDescription}` }],
-                });
+                let prompt = `Generate code based on the following description. Follow conventions and standards. The language is ${language}. Description: ${codeDescription}`;
+                let content = await interactWithOpenAI(prompt);
 
                 // Insert the generated code at the current cursor position
                 editor.edit((editBuilder) => {
-                    editBuilder.insert(editor.selection.start, response.data.choices[0].message.content);
+                    editBuilder.insert(editor.selection.start, content.data.choices[0].message.content);
                 });
 
             } catch (error) {

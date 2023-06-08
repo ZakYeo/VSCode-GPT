@@ -22,6 +22,14 @@
       {
         "command": "gpt-vscode.openai.generateCode",
         "title": "Generate Code"
+      },
+      {
+        "command": "gpt-vscode.openai.chatWithAI",
+        "title": "Give Prompt"
+      },
+      {
+        "command": "gpt-vscode.openai.addEntry",
+        "title": "Add"
       }
     ],
     "menus": {
@@ -35,6 +43,17 @@
           "command": "gpt-vscode.openai.generateCode",
           "group": "gptvscode@1",
           "title": "Generate Code Using Chat-GPT"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "gpt-vscode.openai.chatWithAI",
+          "when": "view == myListView",
+          "group": "navigation"
+        },
+        {
+          "command": "gpt-vscode.openai.addEntry",
+          "when": "view == myListView"
         }
       ]
     },
@@ -61,6 +80,23 @@
           "description": "OpenAI API Key"
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "myCustomSidebar",
+          "title": "Chat With AI",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "myCustomSidebar": [
+        {
+          "id": "myListView",
+          "name": ""
+        }
+      ]
     }
   },
   "scripts": {
