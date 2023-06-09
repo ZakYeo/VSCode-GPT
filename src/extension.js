@@ -20,7 +20,7 @@ function activate(context) {
     let myDataProvider = new MyDataProvider();
     vscode.window.registerTreeDataProvider('myListView', myDataProvider);
 
-    //let conversationCounter = context.globalState.get('conversationCounter', 1); // Use a default value of 1
+    
     // load saved conversations from storage
     let savedConversations = context.globalState.get('conversations', []); // Use a default value of an empty array
     for (let conversation of savedConversations) {
