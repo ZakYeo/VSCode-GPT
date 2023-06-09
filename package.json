@@ -42,6 +42,14 @@
           "light": "resources/plus.svg",
           "dark": "resources/plus.svg"
         }
+      },
+      {
+        "command": "gpt-vscode.openai.search",
+        "title": "Search Conversations",
+        "icon": {
+          "light": "resources/search.svg",
+          "dark": "resources/search.svg"
+        }
       }
     ],
     "menus": {
@@ -66,7 +74,12 @@
         {
           "command": "gpt-vscode.openai.addEntry",
           "when": "view == myListView",
-          "group": "navigation"
+          "group": "navigation@2"
+        },
+        {
+          "command": "gpt-vscode.openai.search",
+          "when": "view == myListView",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
