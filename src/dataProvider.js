@@ -129,7 +129,7 @@ class MyDataProvider {
 
     createNewConversation(context) {
         let conversationCounter = context.globalState.get('conversationCounter', 1); // Use a default value of 1
-        let newChatLabel = "Chat " + conversationCounter++;
+        let newChatLabel = "Conversation " + conversationCounter++;
         this.addParent(newChatLabel, vscode.TreeItemCollapsibleState.Expanded);
         this.currentConversation = newChatLabel;
         context.globalState.update('conversationCounter', conversationCounter);
