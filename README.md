@@ -1,5 +1,3 @@
-# gpt-vscode README
-
 # GPT-VSCode Extension
 
 This VSCode extension allows you to chat with OpenAI's GPT-3 directly from your editor. You can ask it to generate comments, code, or just chat with it.
