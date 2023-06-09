@@ -267,16 +267,15 @@ class MyDataProvider {
             if (conversation.label && conversation.label.toLowerCase().includes(searchQuery.toLowerCase())) {
                 result.push(conversation);
             } else {
-                const matchingMessages = conversation.children.filter(msg => {
-                    console.log(searchQuery);
-                    console.log(msg);
-                    msg.label.toLowerCase().includes(searchQuery.toLowerCase());
-                });
+                
+                const matchingMessages = conversation.children.filter(msg => msg.label.toLowerCase().includes(searchQuery.toLowerCase()));
                 if (matchingMessages.length > 0) {
                     // Clone the conversation and assign matching messages as children
-                    const matchingConversation = new MyTreeItem(conversation.label, vscode.TreeItemCollapsibleState.Collapsed);
-                    matchingConversation.children = matchingMessages;
-                    result.push(matchingConversation);
+                    //console.log(conversation.label)
+                    //const matchingConversation = new MyTreeItem(conversation.label, path.join(__filename, '..', '..', 'resources', 'icon.svg'), vscode.TreeItemCollapsibleState.Collapsed);
+                    //matchingConversation.children = matchingMessages;
+                    //result.push(matchingConversation);
+                    result.push(conversation);
                 }
             }
         });
