@@ -82,7 +82,7 @@
         "gptvscode.openaiApiKey": {
           "type": "string",
           "default": "",
-          "description": "OpenAI API Key"
+          "description": "Enter Your OpenAI API Key"
         }
       }
     },
