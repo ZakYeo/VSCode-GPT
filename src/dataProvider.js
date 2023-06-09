@@ -270,11 +270,6 @@ class MyDataProvider {
                 
                 const matchingMessages = conversation.children.filter(msg => msg.label.toLowerCase().includes(searchQuery.toLowerCase()));
                 if (matchingMessages.length > 0) {
-                    // Clone the conversation and assign matching messages as children
-                    //console.log(conversation.label)
-                    //const matchingConversation = new MyTreeItem(conversation.label, path.join(__filename, '..', '..', 'resources', 'icon.svg'), vscode.TreeItemCollapsibleState.Collapsed);
-                    //matchingConversation.children = matchingMessages;
-                    //result.push(matchingConversation);
                     result.push(conversation);
                 }
             }
