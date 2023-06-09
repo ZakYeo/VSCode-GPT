@@ -82,7 +82,6 @@ class MyDataProvider {
     }
 
     onSearch(input) {
-        console.log('onSearch input:', input);
         if (input.trim() === '') {
             this.clearSearch();
         } else {
@@ -103,7 +102,6 @@ class MyDataProvider {
 
     // Return path to the icon for a sender
     getIconPath(sender) {
-        console.log('getIconPath sender:', sender);  // add this line
         return {
             light: path.join(__filename, '..', '..', 'resources', `${sender.toLowerCase()}.svg`),
             dark: path.join(__filename, '..', '..', 'resources', `${sender.toLowerCase()}.svg`)
@@ -257,7 +255,6 @@ class MyDataProvider {
 
     getData() {
         const searchQuery = this.searchQuery;
-        console.log('getData searchQuery:', searchQuery);
         if (!searchQuery) {
             return this.data;
         }
@@ -267,7 +264,6 @@ class MyDataProvider {
 
         const result = [];
         copiedData.forEach(conversation => {
-            console.log(conversation.label);
             if (conversation.label && conversation.label.toLowerCase().includes(searchQuery.toLowerCase())) {
                 result.push(conversation);
             } else {
