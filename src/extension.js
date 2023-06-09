@@ -21,7 +21,7 @@ function activate(context) {
     });
 
     // Initialize data provider and register it
-    let myDataProvider = new MyDataProvider();
+    let myDataProvider = new MyDataProvider(context);
     vscode.window.registerTreeDataProvider('myListView', myDataProvider);
 
     // Load saved conversations from storage and populate them in the data provider
@@ -46,6 +46,20 @@ function activate(context) {
     // Register command to chat with AI
     let disposableChat = vscode.commands.registerCommand('gpt-vscode.openai.chatWithAI', async function () {
         myDataProvider.chatWithAI(context);
+    });
+
+    vscode.commands.registerCommand('gpt-vscode.openai.deleteEntry', (label) => {
+        myDataProvider.deleteConversation(label);
+    });
+    
+    vscode.commands.registerCommand('gpt-vscode.openai.renameEntry', async (label) => {
+        const newLabel = await vscode.window.showInputBox({ 
+            prompt: 'Enter new name for the conversation',
+            value: label.label // pre-fill the current name
+         });
+        if (newLabel) {
+            myDataProvider.renameConversation(label, newLabel);
+        }
     });
 
     // Add the disposable commands to the context

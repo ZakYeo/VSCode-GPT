@@ -29,11 +29,12 @@ class MyDataProvider {
     /**
      * Create a data provider.
      */
-    constructor() {
+    constructor(context) {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this.data = [];  // Array to store tree data
-        this.currentConversation = null;  // Variable to store the currently selected conversation
+        this.currentConversation = null;
+        this.context = context;  // Variable to store the currently selected conversation
     }
 
     // Refresh the tree view UI
@@ -161,6 +162,62 @@ class MyDataProvider {
         context.globalState.update('conversationCounter', conversationCounter);
     
     }
+
+    // Delete a conversation
+    deleteConversation(label) {
+        // Find the parent node if the label is a child
+        let parentNode;
+        for (let node of this.data) {
+            if (node.label === label.label || node.children.some(child => child.label === label.label)) {
+                parentNode = node;
+                break;
+            }
+        }
+    
+        if (parentNode) {
+            vscode.window.showInformationMessage('Are you sure you want to delete this conversation?', 'Yes', 'No')
+                .then(selection => {
+                    if (selection === 'Yes') {
+                        const index = this.data.indexOf(parentNode);
+                        if (index !== -1) {
+                            this.data.splice(index, 1);
+                            
+    
+                            let savedConversations = this.context.globalState.get('conversations', []);
+                            const savedNodeIndex = savedConversations.findIndex(node => node.label === parentNode.label);
+                            if (savedNodeIndex !== -1) {
+                                savedConversations.splice(savedNodeIndex, 1);
+                                this.context.globalState.update('conversations', savedConversations);
+                            }
+                            this.refresh();
+                        }
+                    }
+                });
+        }
+    }
+
+    // Rename a conversation
+    renameConversation(oldLabel, newLabel) {
+        // Find the parent node if the label is a child
+        let parentNode = this.data.find(node => node.label === oldLabel.label || node.children.some(child => child.label === oldLabel.label));
+    
+        if (parentNode) {
+            
+            
+    
+            let savedConversations = this.context.globalState.get('conversations', []);
+            let savedNodeIndex = savedConversations.findIndex(node => node.label === parentNode.label);
+            if (savedNodeIndex !== -1) {
+                savedConversations[savedNodeIndex].label = newLabel;
+                this.context.globalState.update('conversations', savedConversations);
+            }
+            parentNode.label = newLabel;
+            this.refresh();
+            
+        }
+    }
+    
+
 }
 
 
