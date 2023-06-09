@@ -28,6 +28,14 @@
         "title": "Prompt"
       },
       {
+        "command": "gpt-vscode.openai.deleteEntry",
+        "title": "Delete"
+      },
+      {
+        "command": "gpt-vscode.openai.renameEntry",
+        "title": "Rename"
+      },
+      {
         "command": "gpt-vscode.openai.addEntry",
         "title": "New Conversation",
         "icon": {
@@ -59,6 +67,28 @@
           "command": "gpt-vscode.openai.addEntry",
           "when": "view == myListView",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "gpt-vscode.openai.chatWithAI",
+          "group": "treeItem@1",
+          "when": "view == myListView"
+        },
+        {
+          "command": "gpt-vscode.openai.addEntry",
+          "group": "treeItem@1",
+          "when": "view == myListView"
+        },
+        {
+          "command": "gpt-vscode.openai.deleteEntry",
+          "group": "management@1",
+          "when": "view == myListView"
+        },
+        {
+          "command": "gpt-vscode.openai.renameEntry",
+          "group": "management@1",
+          "when": "view == myListView"
         }
       ]
     },
