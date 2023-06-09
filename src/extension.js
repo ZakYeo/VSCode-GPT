@@ -69,7 +69,7 @@ function activate(context) {
     vscode.commands.registerCommand('gpt-vscode.openai.renameEntry', async (label) => {
         const newLabel = await vscode.window.showInputBox({ 
             prompt: 'Enter new name for the conversation',
-            value: label.label // pre-fill the current name
+            value: myDataProvider.getParentFromChildLabel(label.label)
          });
         if (newLabel) {
             myDataProvider.renameConversation(label, newLabel);
