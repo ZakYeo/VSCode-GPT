@@ -1,17 +1,21 @@
 const vscode = require('vscode');
 const { Configuration, OpenAIApi } = require("openai");
 
-
+// Set up OpenAI API configuration using the user's API key from VS Code settings
 const configuration = new Configuration({
     apiKey: vscode.workspace.getConfiguration('gptvscode').get('openaiApiKey')
 });
 
+// Initialize OpenAI API client with the configuration
 const openai = new OpenAIApi(configuration);
 
+// Declare a variable to prevent simultaneous API calls
 let isRunning = false;
 
+// Function to interact with OpenAI API
 async function interactWithOpenAI(prompt) {
     try {
+        // Send the prompt to the API and get the response
         const response = await openai.createChatCompletion({
             model: 'gpt-3.5-turbo',
             messages: [{ role: 'user', content: prompt }],
@@ -19,10 +23,12 @@ async function interactWithOpenAI(prompt) {
         return response.data.choices[0].message.content;
     } catch (error) {
         console.error(error);
+        // Return an error message if something goes wrong
         return 'An error occurred while contacting the OpenAI API: ' + error.message;
     }
 }
 
+// Function to generate comments using OpenAI API
 async function generateComments() {
     // Check if the command is already running
     if (isRunning) {
@@ -113,6 +119,7 @@ async function generateComments() {
     }
 }
 
+// Function to generate code using OpenAI API
 async function generateCode() {
     console.log("coding");
     // Check if the command is already running
@@ -170,6 +177,7 @@ async function generateCode() {
     }
 }
 
+// Export the functions to be used in other modules
 module.exports = {
     generateComments,
     generateCode,
