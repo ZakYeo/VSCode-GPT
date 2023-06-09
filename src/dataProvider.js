@@ -33,6 +33,7 @@ class MyDataProvider {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this.data = [];  // Array to store tree data
+        this.originalData = [];
         this.currentConversation = null;
         this.context = context;  // Variable to store the currently selected conversation
     }
@@ -74,24 +75,47 @@ class MyDataProvider {
     // Return children of a tree item
     getChildren(element) {
         if (element) {
-            return element.children;
+            return Promise.resolve(element.children);
         } else {
-            return this.data;
+            return Promise.resolve(this.getData(this.searchQuery));
         }
     }
 
+    onSearch(input) {
+        console.log('onSearch input:', input);
+        if (input.trim() === '') {
+            this.clearSearch();
+        } else {
+            this.searchQuery = input;
+        }
+        this.refresh();
+        
+    }
+    
+
+    clearSearch() {
+        this.searchQuery = null;
+        this.data = JSON.parse(JSON.stringify(this.originalData));
+        this.refresh();
+    }
+    
+    
+
     // Return path to the icon for a sender
     getIconPath(sender) {
+        console.log('getIconPath sender:', sender);  // add this line
         return {
             light: path.join(__filename, '..', '..', 'resources', `${sender.toLowerCase()}.svg`),
             dark: path.join(__filename, '..', '..', 'resources', `${sender.toLowerCase()}.svg`)
         };
     }
+    
 
     // Add a parent item to the tree view
     addParent(label, collapsibleState) {
         const parent = new MyTreeItem(label, path.join(__filename, '..', '..', 'resources', 'icon.svg'), collapsibleState);
         this.data.push(parent);
+        this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
         this.refresh();
     }
 
@@ -102,6 +126,7 @@ class MyDataProvider {
 
             const child = new MyTreeItem(`${sender}: ${label}`, this.getIconPath(sender), collapsibleState)
             parent.children.push(child);
+            this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
             this.refresh();
         }
     }
@@ -181,6 +206,12 @@ class MyDataProvider {
                         const index = this.data.indexOf(parentNode);
                         if (index !== -1) {
                             this.data.splice(index, 1);
+
+                            // Delete from originalData as well
+                            const originalIndex = this.originalData.indexOf(parentNode);
+                            if (originalIndex !== -1) {
+                                this.originalData.splice(originalIndex, 1);
+                            }
                             
     
                             let savedConversations = this.context.globalState.get('conversations', []);
@@ -189,6 +220,7 @@ class MyDataProvider {
                                 savedConversations.splice(savedNodeIndex, 1);
                                 this.context.globalState.update('conversations', savedConversations);
                             }
+
                             this.refresh();
                         }
                     }
@@ -211,11 +243,51 @@ class MyDataProvider {
                 savedConversations[savedNodeIndex].label = newLabel;
                 this.context.globalState.update('conversations', savedConversations);
             }
+
+            // Rename in originalData as well
+            let originalNode = this.originalData.find(node => node.label === oldLabel.label || node.children.some(child => child.label === oldLabel.label));
+            if (originalNode) {
+                originalNode.label = newLabel;
+            }
             parentNode.label = newLabel;
             this.refresh();
             
         }
     }
+
+    getData() {
+        const searchQuery = this.searchQuery;
+        console.log('getData searchQuery:', searchQuery);
+        if (!searchQuery) {
+            return this.data;
+        }
+    
+        // deep copy the original data to avoid modifying it
+        const copiedData = JSON.parse(JSON.stringify(this.originalData)); 
+
+        const result = [];
+        copiedData.forEach(conversation => {
+            console.log(conversation.label);
+            if (conversation.label && conversation.label.toLowerCase().includes(searchQuery.toLowerCase())) {
+                result.push(conversation);
+            } else {
+                const matchingMessages = conversation.children.filter(msg => {
+                    console.log(searchQuery);
+                    console.log(msg);
+                    msg.label.toLowerCase().includes(searchQuery.toLowerCase());
+                });
+                if (matchingMessages.length > 0) {
+                    // Clone the conversation and assign matching messages as children
+                    const matchingConversation = new MyTreeItem(conversation.label, vscode.TreeItemCollapsibleState.Collapsed);
+                    matchingConversation.children = matchingMessages;
+                    result.push(matchingConversation);
+                }
+            }
+        });
+        this.data = result; // update the data with the search results
+        return result;
+    }
+    
     
 
 }

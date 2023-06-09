@@ -32,6 +32,20 @@ function activate(context) {
             myDataProvider.addChild(conversation.label, message.text, vscode.TreeItemCollapsibleState.None, message.sender);
         }
     }
+    let lastValue = "";
+    context.subscriptions.push(vscode.commands.registerCommand('gpt-vscode.openai.search', async () => {
+        const inputBox = vscode.window.createInputBox();
+        inputBox.onDidChangeValue((value) => {
+            lastValue = value;
+            myDataProvider.onSearch(value);
+        });
+        inputBox.onDidAccept(() => {
+            inputBox.hide();
+        });
+        inputBox.placeholder = "Search conversations...";
+        inputBox.value = lastValue;
+        inputBox.show();
+    }));
 
     // Register command to create a new conversation
     let disposableNewConversation = vscode.commands.registerCommand('gpt-vscode.openai.addEntry', async function () {
@@ -62,12 +76,15 @@ function activate(context) {
         }
     });
 
+    
+
     // Add the disposable commands to the context
     context.subscriptions.push(disposableNewConversation);
     context.subscriptions.push(disposableSelectConversation);
     context.subscriptions.push(disposableChat);
     context.subscriptions.push(disposable);
     context.subscriptions.push(disposableGenerateCode);
+    
 }
 
 /**
