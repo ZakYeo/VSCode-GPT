@@ -277,6 +277,23 @@ class MyDataProvider {
         this.data = result; // update the data with the search results
         return result;
     }
+
+    getParentFromChildLabel(childLabel){
+
+        let label = "";
+
+        this.originalData.forEach(conversation => {
+            const matchingMessages = conversation.children.filter(msg => msg.label.toLowerCase().includes(childLabel.toLowerCase()));
+            if (matchingMessages.length > 0) {
+                console.log(conversation.label);
+                label = conversation.label;
+            }
+
+        });
+
+        return label;
+
+    }
     
     
 
