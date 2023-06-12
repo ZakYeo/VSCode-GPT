@@ -67,7 +67,7 @@ async function generateComments() {
                 let prompt = `Add suitable comments and docstrings to the following code. Follow conventions and standards. The language is ${language}. Only include the code in your response: ` + highlightedText;
                 let content = await interactWithOpenAI(prompt);
 
-                content = content.data.choices[0].message.content;
+
                 /*
                 *  Sometimes chatGPT's content can be wrapped in code tags in the following format:
                 *
@@ -160,7 +160,7 @@ async function generateCode() {
 
                 // Insert the generated code at the current cursor position
                 editor.edit((editBuilder) => {
-                    editBuilder.insert(editor.selection.start, content.data.choices[0].message.content);
+                    editBuilder.insert(editor.selection.start, content);
                 });
 
             } catch (error) {
