@@ -121,7 +121,6 @@ async function generateComments() {
 
 // Function to generate code using OpenAI API
 async function generateCode() {
-    console.log("coding");
     // Check if the command is already running
     if (isRunning) {
         vscode.window.showErrorMessage("Please wait until the current operation finishes.");
