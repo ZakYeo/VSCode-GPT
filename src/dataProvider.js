@@ -121,8 +121,16 @@ class MyDataProvider {
     addChild(parentLabel, label, collapsibleState, sender) {
         const parent = this.data.find((node) => node.label === parentLabel);
         if (parent) {
-
-            const child = new MyTreeItem(`${sender}: ${label}`, this.getIconPath(sender), collapsibleState)
+            
+            let child;
+            if(label && !label.toLowerCase().startsWith("ai") && !label.toLowerCase().startsWith("user")){
+                // Add sender to label
+                child = new MyTreeItem(`${sender}: ${label}`, this.getIconPath(sender), collapsibleState);
+            }else{
+                //Label already has sender
+                child = new MyTreeItem(`${label}`, this.getIconPath(sender), collapsibleState);
+            }
+            
             parent.children.push(child);
             this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
             this.refresh();
@@ -177,9 +185,15 @@ class MyDataProvider {
     }
 
     // Create a new conversation
-    createNewConversation(context) {
+    createNewConversation(context, name="") {
         let conversationCounter = context.globalState.get('conversationCounter', 1); // Use a default value of 1
-        let newChatLabel = "Conversation " + conversationCounter++;
+        let newChatLabel = ""
+        if(name === ""){
+            newChatLabel = "Conversation " + conversationCounter++;
+        }else{
+            newChatLabel = name;
+        }
+        
         this.addParent(newChatLabel, vscode.TreeItemCollapsibleState.Expanded);
         this.currentConversation = newChatLabel;
         context.globalState.update('conversationCounter', conversationCounter);
@@ -285,7 +299,6 @@ class MyDataProvider {
         this.originalData.forEach(conversation => {
             const matchingMessages = conversation.children.filter(msg => msg.label.toLowerCase().includes(childLabel.toLowerCase()));
             if (matchingMessages.length > 0) {
-                console.log(conversation.label);
                 label = conversation.label;
             }
 
@@ -302,5 +315,6 @@ class MyDataProvider {
 
 // Export the Data Provider class
 module.exports = {
-    MyDataProvider
+    MyDataProvider,
+    MyTreeItem
 }

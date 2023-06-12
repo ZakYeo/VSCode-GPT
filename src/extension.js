@@ -1,5 +1,7 @@
 const vscode = require('vscode');
-const { MyDataProvider } = require("./dataProvider");
+const path = require('path');
+const os = require('os');
+const { MyDataProvider, MyTreeItem } = require("./dataProvider");
 const { generateComments, generateCode } = require("./openaiInteractions");
 
 /**
@@ -28,9 +30,17 @@ function activate(context) {
     let savedConversations = context.globalState.get('conversations', []); // Use a default value of an empty array
     for (let conversation of savedConversations) {
         myDataProvider.addParent(conversation.label, vscode.TreeItemCollapsibleState.Expanded);
-        for (let message of conversation.messages) {
-            myDataProvider.addChild(conversation.label, message.text, vscode.TreeItemCollapsibleState.None, message.sender);
+        if(conversation.messages){
+            for (let message of conversation.messages) {
+                myDataProvider.addChild(conversation.label, message.text, vscode.TreeItemCollapsibleState.None, message.sender);
+            }
         }
+        if(conversation.children){
+            for (let message of conversation.children) {
+                myDataProvider.addChild(conversation.label, message, vscode.TreeItemCollapsibleState.None, "ai");
+            }
+        }
+        
     }
     let lastValue = "";
     context.subscriptions.push(vscode.commands.registerCommand('gpt-vscode.openai.search', async () => {
@@ -75,6 +85,79 @@ function activate(context) {
             myDataProvider.renameConversation(label, newLabel);
         }
     });
+
+    context.subscriptions.push(vscode.commands.registerCommand('gpt-vscode.openai.importConversations', async () => {
+        const options = {
+            canSelectMany: false,
+            openLabel: 'Open',
+            filters: {
+                'JSON files': ['json']
+            }
+        };
+        const fileUri = await vscode.window.showOpenDialog(options);
+        if (fileUri && fileUri[0]) {
+            const fileContent = await vscode.workspace.fs.readFile(fileUri[0]);
+            const conversations = JSON.parse(fileContent.toString());
+    
+            // Append these conversations to your data structure
+            Object.entries(conversations).forEach(([label, children]) => {
+                let uniqueLabel = label;
+    
+                // If the label already exists, append a unique number
+                let i = 1;
+                while (myDataProvider.data.find(conv => conv.label === uniqueLabel)) {
+                    uniqueLabel = `${label} (${i})`;
+                    i++;
+                }
+    
+                myDataProvider.createNewConversation(context, uniqueLabel);
+    
+                // Update the global state
+                savedConversations.push({label: uniqueLabel, messages: []});
+                context.globalState.update('conversations', savedConversations);
+    
+                Object.entries(children).forEach(child => {
+                    if(child[1].toLowerCase().startsWith("user")){
+                        myDataProvider.addChild(uniqueLabel, child[1], vscode.TreeItemCollapsibleState.None, "user");
+                        let savedConversation = savedConversations.find(conv => conv.label === uniqueLabel);
+                        if (savedConversation) {
+                            savedConversation.messages.push({text: child[1], sender: "User"});
+                        }
+                    }else{
+                        myDataProvider.addChild(uniqueLabel, child[1], vscode.TreeItemCollapsibleState.None, "ai")
+                        let savedConversation = savedConversations.find(conv => conv.label === uniqueLabel);
+                        if (savedConversation) {
+                            savedConversation.messages.push({text: child[1], sender: "AI"});
+                        }
+                    }
+                });
+    
+                context.globalState.update('conversations', savedConversations);
+            });
+    
+            // Update the tree view
+            myDataProvider.refresh();
+        }
+    }));
+    
+    
+      
+      context.subscriptions.push(vscode.commands.registerCommand('gpt-vscode.openai.exportConversations', async () => {
+        const options = {
+          defaultUri: vscode.Uri.file(path.join(os.homedir(), 'conversations.json'))
+        };
+        const fileUri = await vscode.window.showSaveDialog(options);
+        if (fileUri) {
+          const exportFormat = {};
+
+            myDataProvider.data.forEach(conversation => {
+                exportFormat[conversation.label] = conversation.children.map(child => (child.label));
+            });
+            const conversationsJson = JSON.stringify(exportFormat, null, 2);
+            await vscode.workspace.fs.writeFile(fileUri, Buffer.from(conversationsJson, 'utf8'));
+        }
+      }));
+      
 
     
 

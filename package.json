@@ -50,6 +50,22 @@
           "light": "resources/search.svg",
           "dark": "resources/search.svg"
         }
+      },
+      {
+        "command": "gpt-vscode.openai.importConversations",
+        "title": "Import Conversations",
+        "icon": {
+          "light": "resources/import.svg",
+          "dark": "resources/import.svg"
+        }
+      },
+      {
+        "command": "gpt-vscode.openai.exportConversations",
+        "title": "Export Conversations",
+        "icon": {
+          "light": "resources/export.svg",
+          "dark": "resources/export.svg"
+        }
       }
     ],
     "menus": {
@@ -80,6 +96,16 @@
           "command": "gpt-vscode.openai.search",
           "when": "view == myListView",
           "group": "navigation@2"
+        },
+        {
+          "command": "gpt-vscode.openai.importConversations",
+          "when": "view == myListView",
+          "group": ""
+        },
+        {
+          "command": "gpt-vscode.openai.exportConversations",
+          "when": "view == myListView",
+          "group": ""
         }
       ],
       "view/item/context": [
