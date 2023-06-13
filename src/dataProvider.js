@@ -38,7 +38,28 @@ class MyDataProvider {
         this.originalData = [];
         this.currentConversation = null;
         this.context = context;  // Variable to store the currently selected conversation
+        this.treeView = vscode.window.createTreeView('myListView', { treeDataProvider: this });
+
+        // Add listener for collapsing / expanding
+        this.treeView.onDidCollapseElement((e) => {
+            this.saveItemState(e.element.label, vscode.TreeItemCollapsibleState.Collapsed);
+        });
+
+        this.treeView.onDidExpandElement((e) => {
+            this.saveItemState(e.element.label, vscode.TreeItemCollapsibleState.Expanded);
+        });
     }
+
+    // Function to save item state
+    saveItemState(label, state) {
+        let savedConversations = this.context.globalState.get('conversations', []);
+        let conversation = savedConversations.find(conv => conv.label === label);
+        if (conversation) {
+            conversation.state = state;
+        }
+        this.context.globalState.update('conversations', savedConversations);
+    }
+
 
     // Refresh the tree view UI
     refresh() {

@@ -24,18 +24,20 @@ function activate(context) {
 
     // Initialize data provider and register it
     let myDataProvider = new MyDataProvider(context);
-    vscode.window.registerTreeDataProvider('myListView', myDataProvider);
 
     // Load saved conversations from storage and populate them in the data provider
-    let savedConversations = context.globalState.get('conversations', []); // Use a default value of an empty array
+    let savedConversations = context.globalState.get('conversations', []);
+
     for (let conversation of savedConversations) {
-        myDataProvider.addParent(conversation.label, vscode.TreeItemCollapsibleState.Expanded);
+        let state = conversation.state || vscode.TreeItemCollapsibleState.Collapsed; // Default to collapsed if no state is saved
+        myDataProvider.addParent(conversation.label, state);
         if(conversation.messages){
             for (let message of conversation.messages) {
                 myDataProvider.addChild(conversation.label, message.text, vscode.TreeItemCollapsibleState.None, message.sender);
             }
         }
     }
+
     let lastValue = "";
     context.subscriptions.push(vscode.commands.registerCommand('gpt-vscode.openai.search', async () => {
         const inputBox = vscode.window.createInputBox();
