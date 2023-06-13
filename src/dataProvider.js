@@ -111,29 +111,6 @@ class MyDataProvider {
             dark: path.join(__filename, '..', '..', 'resources', `${sender.toLowerCase()}.svg`)
         };
     }
-    
-
-    // Add a parent item to the tree view
-    addParent(label, collapsibleState) {
-        const parent = new MyTreeItem(label, path.join(__filename, '..', '..', 'resources', 'icon.svg'), collapsibleState, "");
-        this.data.push(parent);
-        this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
-        this.refresh();
-    }
-
-    // Add a child item to a parent item in the tree view
-    addChild(parentLabel, label, collapsibleState, sender) {
-        const parent = this.data.find((node) => node.label === parentLabel);
-        if (parent) {
-            
-            let child;
-            child = new MyTreeItem(`${label}`, this.getIconPath(sender), collapsibleState, sender);
-            
-            parent.children.push(child);
-            this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
-            this.refresh();
-        }
-    }
 
     // Start a chat with the AI
     async chatWithAI(context) {
@@ -141,7 +118,12 @@ class MyDataProvider {
 
     if (!selectedChat) {
         const chatOptions = this.data.map(node => node.label);
-        selectedChat = await vscode.window.showQuickPick(chatOptions, { placeHolder: 'Select a chat to interact with' });
+        if(!chatOptions || chatOptions.length == 0){
+            vscode.window.showInformationMessage(`Create or select a conversation first!`);
+        }else{
+            selectedChat = await vscode.window.showQuickPick(chatOptions, { placeHolder: 'Select a chat to interact with' });
+        }
+        
     }
 
     if (selectedChat) {
@@ -176,6 +158,29 @@ class MyDataProvider {
         }
     }
     }
+    
+
+    // Add a parent item to the tree view
+    addParent(label, collapsibleState) {
+        const parent = new MyTreeItem(label, path.join(__filename, '..', '..', 'resources', 'icon.svg'), collapsibleState, "");
+        this.data.push(parent);
+        this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
+        this.refresh();
+    }
+
+    // Add a child item to a parent item in the tree view
+    addChild(parentLabel, label, collapsibleState, sender) {
+        const parent = this.data.find((node) => node.label === parentLabel);
+        if (parent) {
+            
+            let child;
+            child = new MyTreeItem(`${label}`, this.getIconPath(sender), collapsibleState, sender);
+            
+            parent.children.push(child);
+            this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
+            this.refresh();
+        }
+    }
 
     // Select a conversation
     selectConversation(label) {
@@ -205,6 +210,7 @@ class MyDataProvider {
         for (let node of this.data) {
             if (node.label === label.label || node.children.some(child => child.label === label.label)) {
                 parentNode = node;
+                this.currentConversation = null;
                 break;
             }
         }
@@ -244,9 +250,6 @@ class MyDataProvider {
         let parentNode = this.data.find(node => node.label === oldLabel.label || node.children.some(child => child.label === oldLabel.label));
     
         if (parentNode) {
-            
-            
-    
             let savedConversations = this.context.globalState.get('conversations', []);
             let savedNodeIndex = savedConversations.findIndex(node => node.label === parentNode.label);
             if (savedNodeIndex !== -1) {
@@ -261,7 +264,6 @@ class MyDataProvider {
             }
             parentNode.label = newLabel;
             this.refresh();
-            
         }
     }
 
