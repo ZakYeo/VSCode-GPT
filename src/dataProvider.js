@@ -1,6 +1,6 @@
 const vscode = require('vscode');
 const { interactWithOpenAI } = require("./openaiInteractions");
-
+const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 /**
@@ -14,10 +14,12 @@ class MyTreeItem extends vscode.TreeItem {
      * @param {string} iconPath - The path to the icon of the tree item.
      * @param {vscode.TreeItemCollapsibleState} collapsibleState - The collapsible state of the tree item.
      */
-    constructor(label, iconPath, collapsibleState) {
+    constructor(label, iconPath, collapsibleState, sender) {
         super(label, collapsibleState);
         this.iconPath = iconPath;  // Path to the icon to be displayed with this item
         this.children = [];  // Array to store child nodes
+        this.sender = sender
+        this.id = uuidv4();
     }
 }
 
@@ -92,7 +94,7 @@ class MyDataProvider {
 
     // Add a parent item to the tree view
     addParent(label, collapsibleState) {
-        const parent = new MyTreeItem(label, path.join(__filename, '..', '..', 'resources', 'icon.svg'), collapsibleState);
+        const parent = new MyTreeItem(label, path.join(__filename, '..', '..', 'resources', 'icon.svg'), collapsibleState, "");
         this.data.push(parent);
         this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
         this.refresh();
@@ -104,13 +106,7 @@ class MyDataProvider {
         if (parent) {
             
             let child;
-            if(label && !label.toLowerCase().startsWith("ai") && !label.toLowerCase().startsWith("user")){
-                // Add sender to label
-                child = new MyTreeItem(`${sender}: ${label}`, this.getIconPath(sender), collapsibleState);
-            }else{
-                //Label already has sender
-                child = new MyTreeItem(`${label}`, this.getIconPath(sender), collapsibleState);
-            }
+            child = new MyTreeItem(`${label}`, this.getIconPath(sender), collapsibleState, sender);
             
             parent.children.push(child);
             this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
