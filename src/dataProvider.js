@@ -269,24 +269,28 @@ class MyDataProvider {
         return result;
     }
 
-    getParentFromChildLabel(childLabel){
+    getParentFromChildLabel(label){
 
-        let label = "";
-
+        // If label matches a conversation label, return it immediately
+        const matchingConversation = this.originalData.find(conversation => conversation.label.toLowerCase() === label.toLowerCase());
+        if (matchingConversation) {
+            return matchingConversation.label;
+        }
+    
+        // If not, assume label is a child label and look for its parent
+        let parentLabel = "";
+    
         this.originalData.forEach(conversation => {
-            const matchingMessages = conversation.children.filter(msg => msg.label.toLowerCase().includes(childLabel.toLowerCase()));
+            const matchingMessages = conversation.children.filter(msg => msg.label.toLowerCase().includes(label.toLowerCase()));
             if (matchingMessages.length > 0) {
-                label = conversation.label;
+                parentLabel = conversation.label;
             }
-
         });
-
-        return label;
-
+    
+        return parentLabel;
+    
     }
     
-    
-
 }
 
 
