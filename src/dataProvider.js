@@ -42,25 +42,6 @@ class MyDataProvider {
     refresh() {
         this._onDidChangeTreeData.fire();
     }
-    
-    // Add a message to the tree view
-    addMessage(sender, message) {
-        let iconPath;
-        if (sender === 'AI') {
-            iconPath = {
-                light: path.join(__filename, '..', '..', 'resources', 'ai.svg'),
-                dark: path.join(__filename, '..', '..', 'resources', 'ai.svg')
-            };
-        } else {
-            iconPath = {
-                light: path.join(__filename, '..', '..', 'resources', 'user.svg'),
-                dark: path.join(__filename, '..', '..', 'resources', 'user.svg')
-            };
-        }
-
-        this.data.push(new MyTreeItem(`${sender}: ${message}`, iconPath));
-        this.refresh();
-    }
 
     // Return a tree item
     getTreeItem(element) {
