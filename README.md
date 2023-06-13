@@ -1,12 +1,13 @@
 # GPT-VSCode Extension
 
-This VSCode extension allows you to chat with OpenAI's GPT-3 directly from your editor. You can ask it to generate comments, code, or just chat with it.
+This VSCode extension allows you to chat with OpenAI's GPT directly from your editor. You can ask it to generate comments, code, or just chat with it.
 
 ## Features
 
-- Chat directly with OpenAI's GPT-3.
+- Chat directly with OpenAI's GPT.
 - Generate comments for your code.
 - Generate code based on a description.
+- Swap between different OpenAI Chat models (GPT-3.5-turbo, text-davinci-002, text-curie-003, gpt-4, etc).
 
 ## Requirements
 
@@ -49,6 +50,14 @@ After installing the extension, you need to set your OpenAI API key.
 2. Search for `OpenAI API Key`.
 
 3. Enter your OpenAI API key in the input box.
+
+In addition to the API key, you can also select the model to be used for OpenAI API calls.
+
+1. Open VS Code settings: `File` -> `Preferences` -> `Settings`.
+
+2. Search for `OpenAI Model`.
+
+3. Enter the model name in the input box (default is `gpt-3.5-turbo`).
 
 ## Usage
 

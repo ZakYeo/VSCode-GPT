@@ -15,9 +15,12 @@ let isRunning = false;
 // Function to interact with OpenAI API
 async function interactWithOpenAI(prompt) {
     try {
+        // Get the model from the settings
+        const model = vscode.workspace.getConfiguration('gptvscode').get('openai.model');
+
         // Send the prompt to the API and get the response
         const response = await openai.createChatCompletion({
-            model: 'gpt-3.5-turbo',
+            model: model,
             messages: [{ role: 'user', content: prompt }],
         });
         return response.data.choices[0].message.content;
@@ -27,6 +30,7 @@ async function interactWithOpenAI(prompt) {
         return 'An error occurred while contacting the OpenAI API: ' + error.message;
     }
 }
+
 
 // Function to generate comments using OpenAI API
 async function generateComments() {
