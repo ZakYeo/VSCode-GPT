@@ -127,11 +127,6 @@
           "when": "view == myListView"
         },
         {
-          "command": "gpt-vscode.openai.addEntry",
-          "group": "management@1",
-          "when": "view == myListView"
-        },
-        {
           "command": "gpt-vscode.openai.deleteEntry",
           "group": "management@1",
           "when": "view == myListView"
@@ -220,6 +215,7 @@
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "copy-paste": "^1.5.3",
     "dotenv": "^16.1.4",
+    "gpt-tokenizer": "^2.1.1",
     "openai": "^3.2.1",
     "uuid": "^9.0.0",
     "vscode": "^1.1.37"
