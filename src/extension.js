@@ -1,6 +1,7 @@
 const vscode = require('vscode');
 const path = require('path');
 const os = require('os');
+var ncp = require("copy-paste");
 const { MyDataProvider } = require("./dataProvider");
 const { generateComments, generateCode } = require("./openaiInteractions");
 
@@ -80,6 +81,19 @@ function activate(context) {
         if (newLabel) {
             myDataProvider.renameConversation(label, newLabel);
         }
+    });
+    vscode.commands.registerCommand('gpt-vscode.openai.copyEntryContents', async (label) => {
+        if(myDataProvider.getParentFromChildLabel(label.label) == label.label){
+            // If this tree item is the parent, copy entire conversation
+            const exportFormat = {};
+            exportFormat[label.label] = label.children.map(child => ({[child.sender]: child.label}));
+            ncp.copy(JSON.stringify(exportFormat, null, '\t'), function () {});
+
+        }else{
+            // Else, just copy the selected item
+            ncp.copy(label.label, function () {});
+        }
+        
     });
 
     context.subscriptions.push(vscode.commands.registerCommand('gpt-vscode.openai.importConversations', async () => {
