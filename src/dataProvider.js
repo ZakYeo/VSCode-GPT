@@ -200,8 +200,8 @@ class MyDataProvider {
         this.addParent(newChatLabel, vscode.TreeItemCollapsibleState.Expanded);
         this.currentConversation = newChatLabel;
         context.globalState.update('conversationCounter', conversationCounter);
-    
-    }
+        return newChatLabel;
+    }   
 
     // Delete a conversation
     deleteConversation(label) {

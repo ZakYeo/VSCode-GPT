@@ -56,7 +56,11 @@ function activate(context) {
 
     // Register command to create a new conversation
     let disposableNewConversation = vscode.commands.registerCommand('gpt-vscode.openai.addEntry', async function () {
-        myDataProvider.createNewConversation(context);
+        let uniqueLabel = myDataProvider.createNewConversation(context);
+        // Update the global state
+        let savedConversations = context.globalState.get('conversations', []);
+        savedConversations.push({label: uniqueLabel, messages: []});
+        context.globalState.update('conversations', savedConversations);
     });
 
     // Register command to select an existing conversation
@@ -151,6 +155,7 @@ function activate(context) {
                 myDataProvider.createNewConversation(context, uniqueLabel);
     
                 // Update the global state
+                let savedConversations = context.globalState.get('conversations', []);
                 savedConversations.push({label: uniqueLabel, messages: []});
                 context.globalState.update('conversations', savedConversations);
     
