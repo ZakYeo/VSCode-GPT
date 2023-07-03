@@ -104,9 +104,7 @@ function activate(context) {
     });
 
     vscode.commands.registerCommand('gpt-vscode.openai.openWebView', async (label) => {
-        const parent = myDataProvider.getParentFromChildLabel(label.label);
-        console.log(parent);
-        console.log(myDataProvider.data);
+        const parent = myDataProvider.getParentFromChildLabel(label.label); // Get the name of the conversation
         const panel = vscode.window.createWebviewPanel(
         parent,
         parent,
@@ -117,14 +115,14 @@ function activate(context) {
         }
         );
         let convo = null;
+        // Now get the conversation object
         myDataProvider.data.forEach(conversation => {
             if(conversation.label === parent){
                 convo = conversation;
             }
         });
 
-        console.log(convo);
-
+        // Send the conversation information to the Web View to display
         panel.webview.html = getWebviewContent(convo);
     });
 
