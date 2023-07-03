@@ -238,6 +238,7 @@ class MyDataProvider {
                             }
 
                             this.refresh();
+                            this.currentConversation = null;
                         }
                     }
                 });
