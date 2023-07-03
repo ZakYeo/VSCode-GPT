@@ -28,16 +28,20 @@
         "title": "Prompt"
       },
       {
+        "command": "gpt-vscode.openai.chatWithAI2",
+        "title": "Prompt Conversation"
+      },
+      {
         "command": "gpt-vscode.openai.deleteEntry",
-        "title": "Delete"
+        "title": "Delete Conversation"
       },
       {
         "command": "gpt-vscode.openai.renameEntry",
-        "title": "Rename"
+        "title": "Rename Conversation"
       },
       {
         "command": "gpt-vscode.openai.copyEntryContents",
-        "title": "Copy Contents"
+        "title": "Copy"
       },
       {
         "command": "gpt-vscode.openai.addEntry",
@@ -118,13 +122,13 @@
       ],
       "view/item/context": [
         {
-          "command": "gpt-vscode.openai.chatWithAI",
-          "group": "treeItem@1",
+          "command": "gpt-vscode.openai.chatWithAI2",
+          "group": "management@1",
           "when": "view == myListView"
         },
         {
           "command": "gpt-vscode.openai.addEntry",
-          "group": "treeItem@1",
+          "group": "management@1",
           "when": "view == myListView"
         },
         {
@@ -144,7 +148,7 @@
         },
         {
           "command": "gpt-vscode.openai.openWebView",
-          "group": "management@1",
+          "group": "treeItem@1",
           "when": "view == myListView"
         }
       ]

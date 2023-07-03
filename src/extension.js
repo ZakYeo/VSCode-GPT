@@ -68,6 +68,9 @@ function activate(context) {
     let disposableChat = vscode.commands.registerCommand('gpt-vscode.openai.chatWithAI', async function () {
         myDataProvider.chatWithAI(context);
     });
+    let disposableChat2 = vscode.commands.registerCommand('gpt-vscode.openai.chatWithAI2', async function () {
+        myDataProvider.chatWithAI(context);
+    });
 
     vscode.commands.registerCommand('gpt-vscode.openai.deleteEntry', (label) => {
         myDataProvider.deleteConversation(label);
@@ -200,6 +203,7 @@ function activate(context) {
     context.subscriptions.push(disposableNewConversation);
     context.subscriptions.push(disposableSelectConversation);
     context.subscriptions.push(disposableChat);
+    context.subscriptions.push(disposableChat2);
     context.subscriptions.push(disposable);
     context.subscriptions.push(disposableGenerateCode);
     
