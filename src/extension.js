@@ -96,6 +96,31 @@ function activate(context) {
         
     });
 
+    vscode.commands.registerCommand('gpt-vscode.openai.openWebView', async (label) => {
+        const parent = myDataProvider.getParentFromChildLabel(label.label);
+        console.log(parent);
+        console.log(myDataProvider.data);
+        const panel = vscode.window.createWebviewPanel(
+        parent,
+        parent,
+        vscode.ViewColumn.One,
+        {
+            // Enable scripts in the WebView
+            enableScripts: true
+        }
+        );
+        let convo = null;
+        myDataProvider.data.forEach(conversation => {
+            if(conversation.label === parent){
+                convo = conversation;
+            }
+        });
+
+        console.log(convo);
+
+        panel.webview.html = getWebviewContent(convo);
+    });
+
     context.subscriptions.push(vscode.commands.registerCommand('gpt-vscode.openai.importConversations', async () => {
         const options = {
             canSelectMany: false,
@@ -185,6 +210,107 @@ function activate(context) {
  * @description Deactivation function for the extension. Add any necessary cleanup tasks here.
  */
 function deactivate() {}
+
+
+function getWebviewContent(convo) {
+    // Convert the convo object to a JSON string
+    const data = JSON.stringify(convo);
+
+    // Include the data as a JavaScript variable within a script tag in your HTML content
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <script type="module">
+            import { vscode } from '@vscode/webview-ui-toolkit';
+    </script>
+    <style>
+        body {
+            font-family: var(--vscode-font-family);
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 1em;
+        }
+        .user-message, .ai-message {
+            max-width: 70%;
+            font-weight: bold;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: var(--vscode-button-background);;
+            color: var(--vscode-button-foreground);
+            align-self: flex-end;
+            text-align: right;
+        }
+        .ai-message {
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            align-self: flex-start;
+            text-align: left;
+        }
+        .conversation-entry {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+        }
+    </style>
+    </head>
+    <body>
+        <div id="conversation"></div>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script>
+
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const data = ${data};
+
+            function escapeHtml(unsafe) {
+                return unsafe;
+                    /*.replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");*/
+            }
+
+            function createConversationEntry(entry) {
+                const messageClass = entry.sender.toLowerCase() + '-message';
+                const content = marked.parse(escapeHtml(entry.label));
+                return \`<div class="conversation-entry">
+                    <div class="\${messageClass}">\${content}</div>
+                </div>\`;
+            }
+
+            if (data.children && data.children.length) {
+                const conversationDiv = document.getElementById('conversation');
+                const conversationHtml = data.children.map(createConversationEntry).join('');
+                conversationDiv.innerHTML = conversationHtml;
+            } else {
+                console.error('No conversation entries to display');  // Log an error if there are no conversation entries
+            }
+            
+        });
+            
+        </script>
+    </body>
+    </html>`;
+}
+
+
+
+
+
+
+
 
 // Export the activate and deactivate functions so that they can be used by VS Code
 module.exports = {
