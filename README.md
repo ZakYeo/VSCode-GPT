@@ -4,7 +4,8 @@ This VSCode extension allows you to chat with OpenAI's GPT directly from your ed
 
 ## Features
 
-- Chat directly with OpenAI's GPT.
+- Chat and create conversations directly with OpenAI's GPT.
+- Conversations are saved to memory, and can be imported or exported using JSON
 - Generate comments for your code.
 - Generate code based on a description.
 - Swap between different OpenAI Chat models (GPT-3.5-turbo, text-davinci-002, text-curie-003, gpt-4, etc).
@@ -61,15 +62,16 @@ In addition to the API key, you can also select the model to be used for OpenAI 
 
 ## Usage
 
-After setting up your OpenAI API Key, you can use the commands provided by the extension:
+After setting up your OpenAI API Key, you can use the following features:
 
-- `Chat With AI`: This command allows you to chat directly with OpenAI's GPT-3.
+- `Chat With AI In TreeView`: Users can converse with chatGPT, and conversations are saved and stored in the TreeView in the sidebar on the left of VSCode.
 
-- `Generate Comments`: This command generates comments for your code.
+- `Chat With AI In WebView`: Users can view specific conversations in a "Web View" that allows for a better view.
 
-- `Generate Code`: This command generates code based on a description.
+- `Generate Comments`: This command generates comments for your code, and is added to the right-click menu also.
 
-You can access these commands from the Command Palette or from the context menu in the editor.
+- `Generate Code`: This command generates code based on a description, and is added to the right-click menu also.
+
 
 ## Contribution
 
