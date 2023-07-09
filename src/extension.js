@@ -23,7 +23,7 @@ function activate(context) {
         await generateCode();
     });
 
-    // Register command to generate code using GPT
+    // Register command to optimise code using GPT
     let disposableOptimiseCode = vscode.commands.registerCommand('gpt-vscode.openai.optimiseCode', async function () {
         await optimiseCode();
     });
