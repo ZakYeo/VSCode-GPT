@@ -18,5 +18,37 @@ This extension requires an OpenAI API key. You can get one from [OpenAI's websit
 - [General Usage / Quickstart](vsc-extension-quickstart.md)
 - [Development Instructions](DEVELOPMENT.md)
 
+## Screenshots
+Below is a screenshot of the Tree View in the Side bar (left-hand side) and a Web View on the right-hand side.
+<img
+  src="/screenshots/treeview-and-webview.png"
+  alt="Side Bar Tree View & Web View for Conversations"
+  title="Side Bar Tree View & Web View for Conversations"
+  style="display: inline-block; margin: 0 auto;">
+Every conversation can be opened in a Web View using the Tree View's right-click context menu
+<img
+  src="/screenshots/sidebar-context-menu.png"
+  alt="Side Bar Context Menu"
+  title="Side Bar Context Menu"
+  style="display: inline-block; margin: 0 auto;"><br>
+Prompts are done by pressing the "Prompt" button from the side-bar, or by using the Tree View's context menu.
+<img
+  src="/screenshots/prompt.png"
+  alt="Side Bar Prompt Menu"
+  title="Side Bar Prompt Menu"
+  style="display: inline-block; margin: 0 auto;">
+Conversations may also be searched
+<img
+  src="/screenshots/search.png"
+  alt="Search Conversations"
+  title="Search Conversations"
+  style="display: inline-block; margin: 0 auto;">
+Share conversations with others using import / export features
+<img
+  src="/screenshots/import-export-conversations.png"
+  alt="Import Export Conversations"
+  title="Import Export Conversations"
+  style="display: inline-block; margin: 0 auto;">
+
 ## Changelog
 - [CHANGELOG](CHANGELOG.md)
