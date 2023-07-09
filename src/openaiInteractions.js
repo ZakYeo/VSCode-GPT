@@ -71,43 +71,31 @@ async function generateComments() {
                 let prompt = `Add suitable comments and docstrings to the following code. Follow conventions and standards. The language is ${language}. Only include the code in your response: ` + highlightedText;
                 let content = await interactWithOpenAI(prompt);
 
-
                 /*
-                *  Sometimes chatGPT's content can be wrapped in code tags in the following format:
-                *
-                *                                  language```content```
-                *  
-                * The following regex is designed to remove anything but the content.
-                *    
-                * `^(\w+\n)?```([\s\S]*?)```$`: The entire regular expression.
-                * 
-                * `^`: This matches the start of the string. It ensures that the pattern must start at the beginning of the string.
-                * 
-                * `(\w+\n)?`: This part matches a language identifier at the start of the string, followed by a newline. 
-                * The `\w+` part matches one or more word characters (equivalent to [a-zA-Z0-9_]), 
-                * and the `\n` matches a newline. The whole group is made optional by the `?` at the end.
-                * 
-                * ```([\s\S]*?)```$: This part starts and ends with triple backticks, matching a block of content 
-                * that is surrounded by these backticks. Inside the backticks, `[\s\S]*?` matches any amount of 
-                * any character, including newline characters, in a non-greedy way. The `$` at the end ensures that 
-                * the pattern must go all the way to the end of the string.
-                * 
-                * Together, this regular expression matches strings where a block of content is surrounded by triple 
-                * backticks, optionally preceded by a language identifier. It captures only the content inside the 
-                * backticks.
+                The following regex is designed to remove anything but the content within the triple backtick (```) code blocks.
+                
+                `(?:\w+\n)?```([\s\S]*?)```/g`: The entire regular expression.
+
+                `(?:\w+\n)?`: This part matches a language identifier at the start of the triple backtick code block, followed by a newline. The `\w+` part matches one or more word characters (equivalent to [a-zA-Z0-9_]), and the `\n` matches a newline. The whole group is made optional by the `?` at the end. The `?:` at the start makes it a non-capturing group, which means it will not be included in the match results.
+
+                ```([\s\S]*?)```/g: This part starts and ends with triple backticks, matching a block of content that is surrounded by these backticks. Inside the backticks, `[\s\S]*?` matches any amount of any character, including newline characters, in a non-greedy way. The `/g` at the end makes the regular expression global, which means it will find all matches rather than stopping after the first match.
+
+                Together, this regular expression matches strings where a block of content is surrounded by triple backticks, optionally preceded by a language identifier. It captures only the content inside the backticks. This version of the regular expression will find these blocks anywhere in the string, not just at the start or end.
                 */
-                let regex = /^(\w+\n)?```([\s\S]*?)```$/;
+                let regex = /```(\w+\n)?([\s\S]*?)```/g;
                 let match = content.match(regex);
+                let code = "";
 
                 if (match) {
-                    content = match[2];
+                    match.forEach((m) => {
+                        let codeBlock = m.replace(/```(?:\w+\n)?([\s\S]*?)```/g, "$1");
+                        code += codeBlock.trim();
+                    });
                 }
-
-
 
                 // Replace the highlighted text with the response from OpenAI API
                 editor.edit((editBuilder) => {
-                    editBuilder.replace(selection, content.trim());
+                    editBuilder.replace(selection, code);
                 });
 
                 // Display a new notification with a completion message
@@ -161,10 +149,20 @@ async function generateCode() {
             try {
                 let prompt = `Generate code based on the following description. Follow conventions and standards. The language is ${language}. Description: ${codeDescription}`;
                 let content = await interactWithOpenAI(prompt);
+                let regex = /```(\w+\n)?([\s\S]*?)```/g;
+                let match = content.match(regex);
+                let code = "";
+
+                if (match) {
+                    match.forEach((m) => {
+                        let codeBlock = m.replace(/```(?:\w+\n)?([\s\S]*?)```/g, "$1");
+                        code += codeBlock.trim();
+                    });
+                }
 
                 // Insert the generated code at the current cursor position
                 editor.edit((editBuilder) => {
-                    editBuilder.insert(editor.selection.start, content);
+                    editBuilder.insert(editor.selection.start, code);
                 });
 
             } catch (error) {
@@ -178,6 +176,19 @@ async function generateCode() {
         // Display a new notification with a completion message
         await vscode.window.showInformationMessage("Code generated.");
     }
+}
+
+async function extractCodeInCodeTags(content){
+    
+    let regex = /^(\w+\n)?```([\s\S]*?)```$/;
+    let match = content.match(regex);
+
+    if (match) {
+        content = match[2];
+    }
+
+    return content;
+
 }
 
 // Export the functions to be used in other modules
