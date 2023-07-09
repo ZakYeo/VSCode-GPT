@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.2] - 2023-07-09
+
+### Added
+
+- Added screenshots of the extension
+- Added "optimise code" command.
+
+### Changed
+
+- Changed "Copy" to "Copy Text" in TreeView's context menu
+
+### Fixed
+
+- Fixed a bug when after prompting, the response and prompt would not save to the conversation after it had been renamed.
+- Fixed a bug that would allow non-code to be pasted when using generate code or generate comments command.
+
 ## [1.3.1] - 2023-07-09
 
 ### Added
