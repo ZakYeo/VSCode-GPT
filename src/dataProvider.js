@@ -260,6 +260,7 @@ class MyDataProvider extends EventEmitter {
             if (savedNodeIndex !== -1) {
                 savedConversations[savedNodeIndex].label = newLabel;
                 this.context.globalState.update('conversations', savedConversations);
+                this.currentConversation = newLabel;
             }
 
             // Rename in originalData as well
