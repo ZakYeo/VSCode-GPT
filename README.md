@@ -6,8 +6,9 @@ Visual Studio Code extension designed to improve & optimise workflow by allowing
 
 - Chat and create conversations directly with OpenAI's GPT.
 - Conversations are saved to memory, and can be imported or exported using JSON
-- Generate comments for your code.
-- Generate code based on a description.
+- Generate comments for your code via chatGPT.
+- Generate code based on a description via chatGPT.
+- Optimise your code via chatGPT
 - Swap between different OpenAI Chat models (GPT-3.5-turbo, text-davinci-002, text-curie-003, gpt-4, etc).
 
 ## Requirements
@@ -15,10 +16,12 @@ Visual Studio Code extension designed to improve & optimise workflow by allowing
 This extension requires an OpenAI API key. You can get one from [OpenAI's website](https://openai.com/).
 
 ## Usage
+
 - [General Usage / Quickstart](vsc-extension-quickstart.md)
 - [Development Instructions](DEVELOPMENT.md)
 
 ## Screenshots
+
 Below is a screenshot of the Tree View in the Side bar (left-hand side) and a Web View on the right-hand side.
 <img
   src="/screenshots/treeview-and-webview.png"
@@ -51,4 +54,5 @@ Share conversations with others using import / export features
   style="display: inline-block; margin: 0 auto;">
 
 ## Changelog
+
 - [CHANGELOG](CHANGELOG.md)

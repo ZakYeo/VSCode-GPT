@@ -44,4 +44,6 @@ After setting up your OpenAI API Key, you can use the following features:
 
 - `Generate Code`: This command generates code based on a description, and is added to the right-click menu also.
 
+- `Optimise Code`: This command optimises code and is added to the right-click menu also.
+
 Enjoy your interaction with OpenAI's GPT from your editor!
