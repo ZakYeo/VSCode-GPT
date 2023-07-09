@@ -68,21 +68,27 @@ async function generateComments() {
             cancellable: false
         }, async (progress) => {
             try {
-                let prompt = `Add suitable comments and docstrings to the following code. Follow conventions and standards. The language is ${language}. Only include the code in your response: ` + highlightedText;
+                let prompt = `Add suitable comments and docstrings to the following code. Follow conventions and standards. Wrap the code in triple backticks. The language is ${language}. Only include the code in your response: ` + highlightedText;
                 let content = await interactWithOpenAI(prompt);
 
                 /*
-                The following regex is designed to remove anything but the content within the triple backtick (```) code blocks.
-                
-                `(?:\w+\n)?```([\s\S]*?)```/g`: The entire regular expression.
+                The following regex is designed to identify and isolate the content within code blocks enclosed by triple backticks (` ``` `). The code blocks optionally may have a language identifier preceding the code content. If a language identifier is present, it will not be included in the captured groups.
 
-                `(?:\w+\n)?`: This part matches a language identifier at the start of the triple backtick code block, followed by a newline. The `\w+` part matches one or more word characters (equivalent to [a-zA-Z0-9_]), and the `\n` matches a newline. The whole group is made optional by the `?` at the end. The `?:` at the start makes it a non-capturing group, which means it will not be included in the match results.
+                Here is a breakdown of the regular expression: `/```(?:\w+\n)?([\s\S]*?)```/g`.
 
-                ```([\s\S]*?)```/g: This part starts and ends with triple backticks, matching a block of content that is surrounded by these backticks. Inside the backticks, `[\s\S]*?` matches any amount of any character, including newline characters, in a non-greedy way. The `/g` at the end makes the regular expression global, which means it will find all matches rather than stopping after the first match.
+                - `/```(?:\w+\n)?([\s\S]*?)```/g`: This is the entire regular expression. It's divided into various components, each of which plays a distinct role.
 
-                Together, this regular expression matches strings where a block of content is surrounded by triple backticks, optionally preceded by a language identifier. It captures only the content inside the backticks. This version of the regular expression will find these blocks anywhere in the string, not just at the start or end.
+                - ` ``` `: The regular expression starts and ends with triple backticks. These are the delimiters indicating the start and end of the code block in many markdown-like syntaxes.
+
+                - `(?:\w+\n)?`: This part matches an optional language identifier at the start of the code block. The `\w+` part matches one or more word characters (equivalent to `[a-zA-Z0-9_]`). The `\n` matches a newline, which is the separator between the language identifier and the code content. The `?` at the end makes the entire group optional, meaning it could match a code block with or without a language identifier. The `?:` at the start of the group makes it a non-capturing group. Non-capturing groups are used for matching but not capturing the content for later use. In this case, the language identifier is matched but not included in the captured groups.
+
+                - `([\s\S]*?)`: This is a capturing group, as denoted by the parentheses without a `?:` at the start. It matches any character (`[\s\S]`), including newlines, in a non-greedy way (`*?`). The non-greedy qualifier means it will match the shortest possible string that fulfills the condition, which ensures it doesn't accidentally include multiple code blocks in one match. The content matched by this group, which is the content of the code block, is captured for later use.
+
+                - `/g`: This is the global flag. It means the regular expression should find all matches in the string, not just the first one. Without this flag, the regular expression would stop after finding the first code block.
+
+                Together, this regular expression matches strings where code blocks are surrounded by triple backticks and are optionally preceded by a language identifier. It captures only the content inside the backticks, excluding the language identifier and the backticks themselves. It will find these code blocks anywhere in the string, not just at the start or end.
                 */
-                let regex = /```(\w+\n)?([\s\S]*?)```/g;
+                let regex = /```(?:\w+\n)?([\s\S]*?)```/g;
                 let match = content.match(regex);
                 let code = "";
 
@@ -92,6 +98,7 @@ async function generateComments() {
                         code += codeBlock.trim();
                     });
                 }
+
 
                 // Replace the highlighted text with the response from OpenAI API
                 editor.edit((editBuilder) => {
@@ -147,9 +154,9 @@ async function generateCode() {
             cancellable: false
         }, async (progress) => {
             try {
-                let prompt = `Generate code based on the following description. Follow conventions and standards. The language is ${language}. Description: ${codeDescription}`;
+                let prompt = `Generate code based on the following description. Follow conventions and standards. Wrap the code in triple backticks. The language is ${language}. Description: ${codeDescription}`;
                 let content = await interactWithOpenAI(prompt);
-                let regex = /```(\w+\n)?([\s\S]*?)```/g;
+                let regex = /```(?:\w+\n)?([\s\S]*?)```/g;
                 let match = content.match(regex);
                 let code = "";
 
@@ -159,6 +166,7 @@ async function generateCode() {
                         code += codeBlock.trim();
                     });
                 }
+
 
                 // Insert the generated code at the current cursor position
                 editor.edit((editBuilder) => {
@@ -191,9 +199,79 @@ async function extractCodeInCodeTags(content){
 
 }
 
+// Function to optimise code using OpenAI API
+async function optimiseCode() {
+    // Check if the command is already running
+    if (isRunning) {
+        vscode.window.showErrorMessage("Please wait until the current operation finishes.");
+        return;
+    }
+
+    isRunning = true;
+
+    const editor = vscode.window.activeTextEditor;
+
+    if (editor) {
+        let document = editor.document;
+        let selection = editor.selection;
+
+        // Get the text the user has highlighted
+        let highlightedText = document.getText(selection);
+
+        // If no text was selected, show an error
+        if (!highlightedText) {
+            vscode.window.showErrorMessage("Please select some text first.");
+            isRunning = false;
+            return;
+        }
+
+        // Get the language of the current file
+        let language = document.languageId;
+
+        // Display a progress indicator
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Attempting to optimise code. Please Wait...",
+            cancellable: false
+        }, async (progress) => {
+            try {
+                let prompt = `Optimise, refactor & improve the following code snippet. Don't remove comments or code (only if it's redundant). The language is ${language}. Wrap the code in triple backticks: ` + highlightedText;
+                let content = await interactWithOpenAI(prompt);
+
+                let regex = /```(?:\w+\n)?([\s\S]*?)```/g;
+                let match = content.match(regex);
+                let code = "";
+
+                if (match) {
+                    match.forEach((m) => {
+                        let codeBlock = m.replace(/```(?:\w+\n)?([\s\S]*?)```/g, "$1");
+                        code += codeBlock.trim();
+                    });
+                }
+
+
+                // Replace the highlighted text with the response from OpenAI API
+                editor.edit((editBuilder) => {
+                    editBuilder.replace(selection, code);
+                });
+
+                // Display a new notification with a completion message
+                vscode.window.showInformationMessage("Code optimised.");
+
+            } catch (error) {
+                vscode.window.showErrorMessage('An error occurred while contacting the OpenAI API: ' + error.message);
+                console.error(error);
+            } finally {
+                isRunning = false;
+            }
+        });
+    }
+}
+
 // Export the functions to be used in other modules
 module.exports = {
     generateComments,
     generateCode,
+    optimiseCode,
     interactWithOpenAI
 }

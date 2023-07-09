@@ -24,6 +24,10 @@
         "title": "Generate Code"
       },
       {
+        "command": "gpt-vscode.openai.optimiseCode",
+        "title": "Optimise Code"
+      },
+      {
         "command": "gpt-vscode.openai.chatWithAI",
         "title": "Prompt"
       },
@@ -91,6 +95,11 @@
           "command": "gpt-vscode.openai.generateCode",
           "group": "gptvscode@1",
           "title": "Generate Code Using Chat-GPT"
+        },
+        {
+          "command": "gpt-vscode.openai.optimiseCode",
+          "group": "gptvscode@1",
+          "title": "Optimise Code Using Chat-GPT"
         }
       ],
       "view/title": [

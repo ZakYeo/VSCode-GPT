@@ -3,7 +3,7 @@ const path = require('path');
 const os = require('os');
 var ncp = require("copy-paste");
 const { MyDataProvider } = require("./dataProvider");
-const { generateComments, generateCode } = require("./openaiInteractions");
+const { generateComments, generateCode, optimiseCode } = require("./openaiInteractions");
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -21,6 +21,11 @@ function activate(context) {
     // Register command to generate code using GPT
     let disposableGenerateCode = vscode.commands.registerCommand('gpt-vscode.openai.generateCode', async function () {
         await generateCode();
+    });
+
+    // Register command to generate code using GPT
+    let disposableOptimiseCode = vscode.commands.registerCommand('gpt-vscode.openai.optimiseCode', async function () {
+        await optimiseCode();
     });
 
     // Initialize data provider and register it
@@ -222,6 +227,7 @@ function activate(context) {
     context.subscriptions.push(disposableChat2);
     context.subscriptions.push(disposable);
     context.subscriptions.push(disposableGenerateCode);
+    context.subscriptions.push(disposableOptimiseCode);
     
 }
 
