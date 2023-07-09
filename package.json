@@ -41,7 +41,7 @@
       },
       {
         "command": "gpt-vscode.openai.copyEntryContents",
-        "title": "Copy"
+        "title": "Copy Text"
       },
       {
         "command": "gpt-vscode.openai.addEntry",
