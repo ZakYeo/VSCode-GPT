@@ -122,6 +122,19 @@ function activate(context) {
             }
         });
 
+        myDataProvider.on('dataChanged', () => {
+            let convo = null;
+            // Now get the conversation object
+            myDataProvider.data.forEach(conversation => {
+                if(conversation.label === parent){
+                    convo = conversation;
+                }
+            });
+
+            // Send the conversation information to the Web View to display
+            panel.webview.html = getWebviewContent(convo);
+        });
+
         // Send the conversation information to the Web View to display
         panel.webview.html = getWebviewContent(convo);
     });
@@ -311,13 +324,6 @@ function getWebviewContent(convo) {
     </body>
     </html>`;
 }
-
-
-
-
-
-
-
 
 // Export the activate and deactivate functions so that they can be used by VS Code
 module.exports = {

@@ -2,6 +2,7 @@ const vscode = require('vscode');
 const { interactWithOpenAI } = require("./openaiInteractions");
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const EventEmitter = require('events');
 
 /**
  * Class representing a tree item in Visual Studio Code extensions.
@@ -27,11 +28,12 @@ class MyTreeItem extends vscode.TreeItem {
  * Class acting as a Data Provider in Visual Studio Code extensions.
  * It populates a tree view with data and handles changes in the data.
  */
-class MyDataProvider {
+class MyDataProvider extends EventEmitter {
     /**
      * Create a data provider.
      */
     constructor(context) {
+        super();
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this.data = [];  // Array to store tree data
@@ -152,7 +154,7 @@ class MyDataProvider {
                     savedConversations[conversationIndex].messages.push({ sender: 'AI', text: aiResponse });
                 }
                 await context.globalState.update('conversations', savedConversations);
-
+                
                 vscode.window.showInformationMessage(`Message added to ${selectedChat}`);
             });
         }
@@ -178,6 +180,8 @@ class MyDataProvider {
             
             parent.children.push(child);
             this.originalData = JSON.parse(JSON.stringify(this.data)); // update original data
+            // Emit the 'dataChanged' event
+            this.emit('dataChanged');
             this.refresh();
         }
     }
